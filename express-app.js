@@ -16,21 +16,43 @@ app.get('/', (request, response) => {
   response.render('index');
 })
 
+//Get all words from file system
+const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
+
+//Filter words into easy, normal and hard arrays
+const easyWords = words.filter(word => word.length >= 4 && word.length <= 6);
+const normalWords = words.filter(word => word.length >= 6 && word.length <= 8);
+const hardWords = words.filter(word => word.length >= 8);
+
+//Get a random number in range to call on word arrays.
+//found on: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+const getRandomInt = (min, max) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+//Grab a random word from array
+const easyWord = easyWords[getRandomInt(0, easyWords.length)];
+const normalWord = normalWords[getRandomInt(0, normalWords.length)];
+const hardWord = hardWords[getRandomInt(0, hardWords.length)];
+
+// gameWord is the current word to be guessed
+let gameWord;
 app.get('/easy', (request, response) => {
-  let gameWord = easyWord;
+  gameWord = easyWord;
+  console.log({gameWord})
 })
 
 app.get('/normal', (request, response) => {
-  let gameWord = normalWord;
+  gameWord = normalWord;
+  console.log({gameWord})
 })
 
 app.get('/hard', (request, response) => {
-  let gameWord = hardWord;
+  gameWord = hardWord;
+  console.log({gameWord})
 })
-
-//Create logic for easy route
-//Create normal for easy route
-//Create hard for easy route
 
 app.listen(3000, () => {
   console.log('Listening on port 3000');
