@@ -49,38 +49,63 @@ app.get('/', (request, response) => {
   response.render('index');
 })
 
+let gameWord;
+
 app.get('/easy', (request, response) => {
   hideWord(easyWord);
-  response.render('game', {hiddenWord})
+  gameWord = easyWord;
+  response.render('game', {hiddenWord, gameWord})
 })
 
 app.get('/normal', (request, response) => {
   hideWord(normalWord);
-  response.render('game', {hiddenWord})
+  gameWord = normalWord;
+  response.render('game', {hiddenWord, gameWord})
 })
 
 app.get('/hard', (request, response) => {
   hideWord(hardWord);
-  response.render('game', {hiddenWord})
+  gameWord = hardWord;
+  response.render('game', {hiddenWord, gameWord})
 })
-
 
 let displayedError;
 
+const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
+  console.log(gameWord);
+  gameWord = gameWord.split('');
+  hiddenWord = hiddenWord.split('');
+  for (let i = 0; i < gameWord.length; i++) {
+    if (gameWord[i] === attemptedLetter) {
+      hiddenWord[i] = attemptedLetter;
+    }
+  }
+  return hiddenWord.join(' ');
+
+}
+
+let attemptedLetter;
+
 app.post('/attempt', (request, response) => {
-  const attemptedLetter = request.body.attemptedLetter;
+  attemptedLetter = request.body.attemptedLetter;
+  console.log({attemptsCounter});
 
   if (attemptsCounter < 9) {
+
     if (attemptedLettersArray.includes(attemptedLetter)) {
       displayedError = "No need to guess the same letter twice..";
     } else {
+
+      checkLetter(gameWord, attemptedLetter, hiddenWord);
       attemptedLettersArray.push(attemptedLetter);
       attemptsCounter++
       displayedError = '';
     }
+
   } else {
     displayedError = "You have run out of attempts"
   }
+
   response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedError })
 })
 
