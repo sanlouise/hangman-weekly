@@ -4,6 +4,7 @@ const mustacheExpress = require('mustache-express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const appHelper = require('./app');
+const expressValidator = require('express-validator'),
 
 app.engine('mustache', mustacheExpress());
 app.set('views', './views');
@@ -38,6 +39,7 @@ let attemptsCounter = 0;
 
 let attemptedLettersArray = [];
 
+//Make the word all underscore
 const hideWord = (word) => {
   hiddenWord = word.split('').map(function(character) {
      return character = '_';
@@ -71,10 +73,17 @@ app.get('/hard', (request, response) => {
 
 let displayedError;
 
+//Check if guessed letter is included in the gameWord
 const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
   console.log(gameWord);
+  console.log(attemptsCounter);
+
   gameWord = gameWord.split('');
   hiddenWord = hiddenWord.split('');
+
+  if (!gameWord.includes(attemptedLetter)) {
+    attemptsCounter++
+  }
 
   for (let i = 0; i < gameWord.length; i++) {
     if (gameWord[i] === attemptedLetter) {
@@ -88,24 +97,21 @@ const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
 let attemptedLetter;
 
 app.post('/attempt', (request, response) => {
-  attemptedLetter = request.body.attemptedLetter;
+  attemptedLetter = request.body.attemptedLetter.toLowerCase();
   console.log({attemptsCounter});
 
-  if (attemptsCounter < 100) {
-
+  if (attemptsCounter < 9) {
     if (attemptedLettersArray.includes(attemptedLetter)) {
-      displayedError = "No need to guess the same letter twice..";
+      displayedError = "You already guessed that letter!";
     } else {
       hiddenWord = checkLetter(gameWord, attemptedLetter, hiddenWord);
       attemptedLettersArray.push(attemptedLetter);
-      attemptsCounter++
+      attemptsCounter++;
       displayedError = '';
     }
-
   } else {
-    displayedError = "You have run out of attempts"
+    displayedError = "You have run out of attempts!";
   }
-
   response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedError })
 })
 
