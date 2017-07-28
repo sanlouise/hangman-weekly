@@ -9,7 +9,7 @@ app.engine('mustache', mustacheExpress());
 app.set('views', './views');
 app.set('view engine', 'mustache');
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', (request, response) => {
@@ -38,20 +38,27 @@ const normalWord = normalWords[getRandomInt(0, normalWords.length)];
 const hardWord = hardWords[getRandomInt(0, hardWords.length)];
 
 // gameWord is the current word to be guessed
-let gameWord;
+let hiddenWord;
+
+const hideWord = (word) => {
+  hiddenWord = word.split('').map(function(character) {
+     return character = '_';
+  }).join(' ');
+}
+
 app.get('/easy', (request, response) => {
-  gameWord = easyWord;
-  console.log({gameWord})
+  hideWord(easyWord);
+  response.render('game', {hiddenWord})
 })
 
 app.get('/normal', (request, response) => {
-  gameWord = normalWord;
-  console.log({gameWord})
+  hideWord(normalWord);
+  response.render('game', {hiddenWord})
 })
 
 app.get('/hard', (request, response) => {
-  gameWord = hardWord;
-  console.log({gameWord})
+  hideWord(hardWord);
+  response.render('game', {hiddenWord})
 })
 
 app.listen(3000, () => {
