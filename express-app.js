@@ -12,10 +12,6 @@ app.set('view engine', 'mustache');
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get('/', (request, response) => {
-  response.render('index');
-})
-
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 
@@ -38,12 +34,20 @@ const normalWord = normalWords[getRandomInt(0, normalWords.length)];
 const hardWord = hardWords[getRandomInt(0, hardWords.length)];
 
 let hiddenWord;
+let attemptsCounter = 0;
+
+let attemptedLettersArray = [];
 
 const hideWord = (word) => {
   hiddenWord = word.split('').map(function(character) {
      return character = '_';
   }).join(' ');
 }
+
+app.get('/', (request, response) => {
+  attemptedLettersArray = [];
+  response.render('index');
+})
 
 app.get('/easy', (request, response) => {
   hideWord(easyWord);
@@ -60,12 +64,24 @@ app.get('/hard', (request, response) => {
   response.render('game', {hiddenWord})
 })
 
-let attemptedLettersArray = [];
+
+let displayedError;
 
 app.post('/attempt', (request, response) => {
   const attemptedLetter = request.body.attemptedLetter;
-  attemptedLettersArray.push(attemptedLetter);
-  response.render('game', { attemptedLetter, attemptedLettersArray})
+
+  if (attemptsCounter < 9) {
+    if (attemptedLettersArray.includes(attemptedLetter)) {
+      displayedError = "No need to guess the same letter twice..";
+    } else {
+      attemptedLettersArray.push(attemptedLetter);
+      attemptsCounter++
+      displayedError = '';
+    }
+  } else {
+    displayedError = "You have run out of attempts"
+  }
+  response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedError })
 })
 
 app.listen(3000, () => {
