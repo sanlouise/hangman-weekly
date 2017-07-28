@@ -41,7 +41,8 @@ let attemptedLettersArray = [];
 const hideWord = (word) => {
   hiddenWord = word.split('').map(function(character) {
      return character = '_';
-  }).join(' ');
+  }).join('');
+  console.log("hidden word method executed")
 }
 
 app.get('/', (request, response) => {
@@ -75,13 +76,14 @@ const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
   console.log(gameWord);
   gameWord = gameWord.split('');
   hiddenWord = hiddenWord.split('');
+
   for (let i = 0; i < gameWord.length; i++) {
     if (gameWord[i] === attemptedLetter) {
       hiddenWord[i] = attemptedLetter;
     }
+    console.log(hiddenWord);
   }
   return hiddenWord.join(' ');
-
 }
 
 let attemptedLetter;
@@ -96,7 +98,7 @@ app.post('/attempt', (request, response) => {
       displayedError = "No need to guess the same letter twice..";
     } else {
 
-      checkLetter(gameWord, attemptedLetter, hiddenWord);
+      hiddenWord = checkLetter(gameWord, attemptedLetter, hiddenWord);
       attemptedLettersArray.push(attemptedLetter);
       attemptsCounter++
       displayedError = '';
