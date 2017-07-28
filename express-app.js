@@ -4,7 +4,7 @@ const mustacheExpress = require('mustache-express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const appHelper = require('./app');
-const expressValidator = require('express-validator'),
+const expressValidator = require('express-validator');
 
 app.engine('mustache', mustacheExpress());
 app.set('views', './views');
@@ -12,6 +12,8 @@ app.set('view engine', 'mustache');
 
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(expressValidator());
 
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
@@ -97,21 +99,33 @@ const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
 let attemptedLetter;
 
 app.post('/attempt', (request, response) => {
-  attemptedLetter = request.body.attemptedLetter.toLowerCase();
-  console.log({attemptsCounter});
 
-  if (attemptsCounter < 9) {
-    if (attemptedLettersArray.includes(attemptedLetter)) {
-      displayedError = "You already guessed that letter!";
+  request
+    .checkBody("attemptedLetter", "You must guess a letter")
+    .notEmpty()
+    .isAlpha()
+    .isLength(1, 1)
+
+    const errors = request.validationErrors();
+    if (errors) {
+      displayedError = "You need to type in something valid"
     } else {
-      hiddenWord = checkLetter(gameWord, attemptedLetter, hiddenWord);
-      attemptedLettersArray.push(attemptedLetter);
-      attemptsCounter++;
-      displayedError = '';
+      attemptedLetter = request.body.attemptedLetter.toLowerCase();
+      console.log({attemptsCounter});
+
+      if (attemptsCounter < 9) {
+        if (attemptedLettersArray.includes(attemptedLetter)) {
+          displayedError = "You already guessed that letter!";
+        } else {
+          hiddenWord = checkLetter(gameWord, attemptedLetter, hiddenWord);
+          attemptedLettersArray.push(attemptedLetter);
+          attemptsCounter++;
+          displayedError = '';
+        }
+      } else {
+        displayedError = "You have run out of attempts!";
+      }
     }
-  } else {
-    displayedError = "You have run out of attempts!";
-  }
   response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedError })
 })
 
