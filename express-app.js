@@ -37,7 +37,6 @@ const easyWord = easyWords[getRandomInt(0, easyWords.length)];
 const normalWord = normalWords[getRandomInt(0, normalWords.length)];
 const hardWord = hardWords[getRandomInt(0, hardWords.length)];
 
-// gameWord is the current word to be guessed
 let hiddenWord;
 
 const hideWord = (word) => {
@@ -59,6 +58,14 @@ app.get('/normal', (request, response) => {
 app.get('/hard', (request, response) => {
   hideWord(hardWord);
   response.render('game', {hiddenWord})
+})
+
+let attemptedLettersArray = [];
+
+app.post('/attempt', (request, response) => {
+  const attemptedLetter = request.body.attemptedLetter;
+  attemptedLettersArray.push(attemptedLetter);
+  response.render('game', { attemptedLetter, attemptedLettersArray})
 })
 
 app.listen(3000, () => {
