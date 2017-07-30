@@ -12,7 +12,6 @@ app.set('view engine', 'mustache');
 
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(expressValidator());
 
 //Get all words from file system
@@ -24,7 +23,6 @@ const normalWords = words.filter(word => word.length >= 6 && word.length <= 8);
 const hardWords = words.filter(word => word.length >= 8);
 
 //Get a random number in range to call on word arrays.
-//found on: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 const getRandomInt = (min, max) => {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -36,16 +34,46 @@ const easyWord = easyWords[getRandomInt(0, easyWords.length)];
 const normalWord = normalWords[getRandomInt(0, normalWords.length)];
 const hardWord = hardWords[getRandomInt(0, hardWords.length)];
 
-let attemptedLetter, displayedMessage, fullWord, hiddenWord;
+let attemptedLetter, displayedMessage, fullWord, hiddenWord, outcome;
 let attemptedLettersArray = [];
 let badAttemptCounter = 0;
-let winner = false;
 
 //Make the word all underscore
 const hideWord = (word) => {
   hiddenWord = word.split('').map(function(character) {
      return character = '_';
   }).join('');
+}
+
+const resultMessage = (fullWord, hiddenWord, response) => {
+  if (fullWord === hiddenWord) {
+    outcome = "winner"
+    console.log("We got a winner");
+    response.redirect('/result');
+  }
+}
+
+//Check if guessed letter is included in the fullWord
+const checkLetter = (fullWord, attemptedLetter, hiddenWord, response, outcome) => {
+  fullWord = fullWord.split('');
+  hiddenWord = hiddenWord.split('');
+
+  if (!fullWord.includes(attemptedLetter)) {
+    badAttemptCounter++
+  }
+
+  for (let i = 0; i < fullWord.length; i++) {
+    if (fullWord[i] === attemptedLetter) {
+      hiddenWord[i] = attemptedLetter;
+    }
+  }
+
+  hiddenWord = hiddenWord.join('');
+  fullWord = fullWord.join('');
+  resultMessage(fullWord, hiddenWord, response);
+
+  console.log(hiddenWord);
+  return hiddenWord;
 }
 
 app.get('/', (request, response) => {
@@ -55,6 +83,7 @@ app.get('/', (request, response) => {
 });
 
 app.get('/easy', (request, response) => {
+  console.log(easyWord);
   hideWord(easyWord);
   fullWord = easyWord;
   response.render('game', {hiddenWord, fullWord})
@@ -72,41 +101,9 @@ app.get('/hard', (request, response) => {
   response.render('game', {hiddenWord, fullWord})
 });
 
-app.get('/winner', (request, response) => {
-  response.render('winner', {hiddenWord, fullWord})
+app.get('/result', (request, response) => {
+  response.render('result', {hiddenWord, fullWord, outcome})
 });
-
-const winnerMessage = (fullWord, hiddenWord, response) => {
-  if (fullWord === hiddenWord) {
-    console.log("We got a winner");
-    response.redirect('/winner');
-  }
-}
-
-//Check if guessed letter is included in the fullWord
-const checkLetter = (fullWord, attemptedLetter, hiddenWord, response) => {
-  console.log(fullWord);
-
-  fullWord = fullWord.split('');
-  hiddenWord = hiddenWord.split('');
-
-  if (!fullWord.includes(attemptedLetter)) {
-    badAttemptCounter++
-  }
-
-  for (let i = 0; i < fullWord.length; i++) {
-    if (fullWord[i] === attemptedLetter) {
-      hiddenWord[i] = attemptedLetter;
-    }
-  }
-
-  hiddenWord = hiddenWord.join('');
-  fullWord = fullWord.join('');
-  winnerMessage(fullWord, hiddenWord, response);
-
-  console.log(hiddenWord);
-  return hiddenWord;
-}
 
 app.post('/attempt', (request, response) => {
   request
@@ -122,7 +119,8 @@ app.post('/attempt', (request, response) => {
   }
   if (badAttemptCounter >= 9) {
     displayedMessage = "You have run out of attempts! You suck! Get a life!";
-    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+    outcome = "loser"
+    return response.render('result', { outcome });
   }
   attemptedLetter = request.body.attemptedLetter.toLowerCase();
   console.log({ badAttemptCounter });

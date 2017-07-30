@@ -1,0 +1,19 @@
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background-attachment: fixed;
+  margin: 0px;
+}
+
+h1 {
+  align-items: center;
+  background-color: black;
+  color: white;
+  display: flex;
+  height: 2.5em;
+  font-size: 3em;
+  justify-content: center;
+  margin: 0em;
+  padding: 0px;
+}
