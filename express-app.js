@@ -36,10 +36,10 @@ const easyWord = easyWords[getRandomInt(0, easyWords.length)];
 const normalWord = normalWords[getRandomInt(0, normalWords.length)];
 const hardWord = hardWords[getRandomInt(0, hardWords.length)];
 
-let hiddenWord;
-let attemptsCounter = 0;
-
+let attemptedLetter, displayedMessage, fullWord, hiddenWord;
 let attemptedLettersArray = [];
+let badAttemptCounter = 0;
+let winner = false;
 
 //Make the word all underscore
 const hideWord = (word) => {
@@ -50,85 +50,91 @@ const hideWord = (word) => {
 
 app.get('/', (request, response) => {
   attemptedLettersArray = [];
+  badAttemptCounter = 0;
   response.render('index');
-})
-
-let gameWord;
+});
 
 app.get('/easy', (request, response) => {
   hideWord(easyWord);
-  gameWord = easyWord;
-  response.render('game', {hiddenWord, gameWord})
-})
+  fullWord = easyWord;
+  response.render('game', {hiddenWord, fullWord})
+});
 
 app.get('/normal', (request, response) => {
   hideWord(normalWord);
-  gameWord = normalWord;
-  response.render('game', {hiddenWord, gameWord})
-})
+  fullWord = normalWord;
+  response.render('game', {hiddenWord, fullWord})
+});
 
 app.get('/hard', (request, response) => {
   hideWord(hardWord);
-  gameWord = hardWord;
-  response.render('game', {hiddenWord, gameWord})
-})
+  fullWord = hardWord;
+  response.render('game', {hiddenWord, fullWord})
+});
 
-let displayedError;
+const winnerMessage = (fullWord, hiddenWord) => {
+  fullWord = fullWord.join('');
+  if (fullWord === hiddenWord) {
+    console.log("We got a winner")
+    displayedMessage = "You have won!"
+  }
+}
 
-//Check if guessed letter is included in the gameWord
-const checkLetter = (gameWord, attemptedLetter, hiddenWord) => {
-  console.log(gameWord);
-  console.log(attemptsCounter);
+//Check if guessed letter is included in the fullWord
+const checkLetter = (fullWord, attemptedLetter, hiddenWord) => {
+  console.log(fullWord);
+  console.log(badAttemptCounter);
 
-  gameWord = gameWord.split('');
+  fullWord = fullWord.split('');
   hiddenWord = hiddenWord.split('');
 
-  if (!gameWord.includes(attemptedLetter)) {
-    attemptsCounter++
+  if (!fullWord.includes(attemptedLetter)) {
+    badAttemptCounter++
   }
 
-  for (let i = 0; i < gameWord.length; i++) {
-    if (gameWord[i] === attemptedLetter) {
+  for (let i = 0; i < fullWord.length; i++) {
+    if (fullWord[i] === attemptedLetter) {
       hiddenWord[i] = attemptedLetter;
     }
   }
+
+  hiddenWord = hiddenWord.join('');
+
+  winnerMessage(fullWord, hiddenWord);
+
   console.log(hiddenWord);
-  return hiddenWord.join('');
+  return hiddenWord;
 }
 
-let attemptedLetter;
-
 app.post('/attempt', (request, response) => {
-
   request
     .checkBody("attemptedLetter", "You must guess a letter")
     .notEmpty()
     .isAlpha()
-    .isLength(1, 1)
+    .isLength(1, 1);
 
-    const errors = request.validationErrors();
-    if (errors) {
-      displayedError = "You need to type in something valid"
-    } else {
-      attemptedLetter = request.body.attemptedLetter.toLowerCase();
-      console.log({attemptsCounter});
+  const errors = request.validationErrors();
+  if (errors) {
+    displayedMessage = "You need to type in something valid.";
+    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  }
+  if (badAttemptCounter >= 9) {
+    displayedMessage = "You have run out of attempts! You suck! Get a life!";
+    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  }
+  attemptedLetter = request.body.attemptedLetter.toLowerCase();
+  console.log({ badAttemptCounter });
+  if (attemptedLettersArray.includes(attemptedLetter)) {
+    displayedMessage = "You already guessed that letter! Sheesh.";
+    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  }
 
-      if (attemptsCounter < 9) {
-        if (attemptedLettersArray.includes(attemptedLetter)) {
-          displayedError = "You already guessed that letter!";
-        } else {
-          hiddenWord = checkLetter(gameWord, attemptedLetter, hiddenWord);
-          attemptedLettersArray.push(attemptedLetter);
-          attemptsCounter++;
-          displayedError = '';
-        }
-      } else {
-        displayedError = "You have run out of attempts!";
-      }
-    }
-  response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedError })
+  hiddenWord = checkLetter(fullWord, attemptedLetter, hiddenWord);
+  attemptedLettersArray.push(attemptedLetter);
+  displayedMessage = '';
+  return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
 })
 
 app.listen(3000, () => {
   console.log('Listening on port 3000');
-})
+});
