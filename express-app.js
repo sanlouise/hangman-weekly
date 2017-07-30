@@ -72,18 +72,20 @@ app.get('/hard', (request, response) => {
   response.render('game', {hiddenWord, fullWord})
 });
 
-const winnerMessage = (fullWord, hiddenWord) => {
-  fullWord = fullWord.join('');
+app.get('/winner', (request, response) => {
+  response.render('winner', {hiddenWord, fullWord})
+});
+
+const winnerMessage = (fullWord, hiddenWord, response) => {
   if (fullWord === hiddenWord) {
-    console.log("We got a winner")
-    displayedMessage = "You have won!"
+    console.log("We got a winner");
+    response.redirect('/winner');
   }
 }
 
 //Check if guessed letter is included in the fullWord
-const checkLetter = (fullWord, attemptedLetter, hiddenWord) => {
+const checkLetter = (fullWord, attemptedLetter, hiddenWord, response) => {
   console.log(fullWord);
-  console.log(badAttemptCounter);
 
   fullWord = fullWord.split('');
   hiddenWord = hiddenWord.split('');
@@ -99,8 +101,8 @@ const checkLetter = (fullWord, attemptedLetter, hiddenWord) => {
   }
 
   hiddenWord = hiddenWord.join('');
-
-  winnerMessage(fullWord, hiddenWord);
+  fullWord = fullWord.join('');
+  winnerMessage(fullWord, hiddenWord, response);
 
   console.log(hiddenWord);
   return hiddenWord;
@@ -129,7 +131,7 @@ app.post('/attempt', (request, response) => {
     return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
   }
 
-  hiddenWord = checkLetter(fullWord, attemptedLetter, hiddenWord);
+  hiddenWord = checkLetter(fullWord, attemptedLetter, hiddenWord, response);
   attemptedLettersArray.push(attemptedLetter);
   displayedMessage = '';
   return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
