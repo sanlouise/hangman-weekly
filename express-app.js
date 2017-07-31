@@ -82,6 +82,10 @@ const resultMessage = (fullWord, hiddenWord, response) => {
   }
 }
 
+const getRemainingAttempts = () => {
+  return `You have ${9 - badAttemptCounter} attempts left before you die.`
+}
+
 //Check if guessed letter is included in the fullWord
 const checkLetter = (fullWord, attemptedLetter, hiddenWord, response, outcome) => {
   fullWord = fullWord.split('');
@@ -119,21 +123,21 @@ app.get('/easy', (request, response) => {
   console.log(easyWord);
   hideWord(easyWord);
   fullWord = easyWord;
-  response.render('game', { hiddenWord, fullWord })
+  response.render('game', { hiddenWord, fullWord, badAttemptCounter, getRemainingAttempts })
 });
 
 app.get('/normal', (request, response) => {
   let normalWord = getNormalWord();
   hideWord(normalWord);
   fullWord = normalWord;
-  response.render('game', { hiddenWord, fullWord})
+  response.render('game', { hiddenWord, fullWord, badAttemptCounter })
 });
 
 app.get('/hard', (request, response) => {
   let hardWord = getHardWord();
   hideWord(hardWord);
   fullWord = hardWord;
-  response.render('game', { hiddenWord, fullWord })
+  response.render('game', { hiddenWord, fullWord, badAttemptCounter })
 });
 
 app.get('/result', (request, response) => {
@@ -152,33 +156,33 @@ app.post('/setavatar', (request, response) => {
 })
 
 app.post('/attempt', (request, response) => {
-  request
-    .checkBody("attemptedLetter", "You must guess a letter")
-    .notEmpty()
-    .isAlpha()
-    .isLength(1, 1);
-
-  const errors = request.validationErrors();
-  if (errors) {
-    displayedMessage = "You need to type in something valid.";
-    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
-  }
+  // request
+  //   .checkBody("attemptedLetter", "You must guess a letter")
+  //   .notEmpty()
+  //   .isAlpha()
+  //   .isLength(1, 1);
+  //
+  // const errors = request.validationErrors();
+  // if (errors) {
+  //   displayedMessage = "You need to type in something valid.";
+  //   return response.render('game', { getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  // }
   if (badAttemptCounter >= 9) {
     displayedMessage = "You have run out of attempts! You suck! Get a life!";
     outcome = "loser"
     return response.render('result', { outcome });
   }
-  attemptedLetter = request.body.attemptedLetter.toLowerCase();
+  attemptedLetter = request.query.key.toLowerCase();
   console.log({ badAttemptCounter });
   if (attemptedLettersArray.includes(attemptedLetter)) {
     displayedMessage = "You already guessed that letter! Sheesh.";
-    return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+    return response.render('game', { getRemainingAttempts, getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
   }
 
   hiddenWord = checkLetter(fullWord, attemptedLetter, hiddenWord, response);
   attemptedLettersArray.push(attemptedLetter);
   displayedMessage = '';
-  return response.render('game', { hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  return response.render('game', { getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
 })
 
 app.listen(3000, () => {

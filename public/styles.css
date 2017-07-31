@@ -16,56 +16,83 @@ h1 {
   padding: 0px;
 }
 
+input {
+  margin-top: 30px;
+  width: 80%;
+  height: 30px;
+}
+
 .hangman-img-0 {
   background-image: url('img/0.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-1 {
   background-image: url('img/1.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-2 {
   background-image: url('img/2.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-3 {
   background-image: url('img/3.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-4 {
   background-image: url('img/4.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-5 {
   background-image: url('img/5.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-6 {
   background-image: url('img/6.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-7 {
   background-image: url('img/7.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
 }
 
 .hangman-img-8 {
   background-image: url('img/8.png');
   height: 400px;
-  width: 250px;
+  width: 180px;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+}
+
+.key {
+  background: #000000;
+  border: 2px solid #999;
+  color: #ffffff;
+  margin: 0 1px;
+  padding: 20px;
+  transition: 1s background, color;
+}
+
+.key:hover {
+  background: #ffffff;
+  color: #999999;
+  outline: 0;
 }
