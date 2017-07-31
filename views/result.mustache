@@ -6,5 +6,12 @@
   </head>
   <body>
     <h1>You are a {{outcome}}</h1>
+
+    <form action="/setavatar" method="post">
+      <h1>Upload an avatar</h1>
+      <input type="file" name="avatar" enctype="multipart/form-data" action="/upload">
+      <button id="avatar-btn" type="submit">Set Avatar</button>
+    </form>
+
   </body>
 </html>

@@ -2,18 +2,70 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  background-attachment: fixed;
   margin: 0px;
 }
 
 h1 {
   align-items: center;
-  background-color: black;
-  color: white;
+  color: black;
   display: flex;
   height: 2.5em;
   font-size: 3em;
   justify-content: center;
   margin: 0em;
   padding: 0px;
+}
+
+.hangman-img-0 {
+  background-image: url('img/0.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-1 {
+  background-image: url('img/1.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-2 {
+  background-image: url('img/2.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-3 {
+  background-image: url('img/3.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-4 {
+  background-image: url('img/4.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-5 {
+  background-image: url('img/5.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-6 {
+  background-image: url('img/6.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-7 {
+  background-image: url('img/7.png');
+  height: 400px;
+  width: 250px;
+}
+
+.hangman-img-8 {
+  background-image: url('img/8.png');
+  height: 400px;
+  width: 250px;
 }

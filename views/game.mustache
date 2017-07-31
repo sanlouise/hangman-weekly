@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8">
     <title>Hangman</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
   </head>
   <body>
 
     <div class="game">
-      <h1>This is the game</h1>
-
+      <h1>Lose and You'll Die</h1>
       <form action="/attempt" method="post">
         <h1>Guess a letter</h1>
         <input type="text" name="attemptedLetter" placeholder="Guess a letter" />
@@ -24,6 +24,8 @@
       </div>
 
       {{displayedMessage}}
+
+       <div class="hangman-img-{{badAttemptCounter}}">
 
     </div>
   </body>

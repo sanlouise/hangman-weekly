@@ -5,10 +5,19 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const appHelper = require('./app');
 const expressValidator = require('express-validator');
+const session = require('express-session');
 
 app.engine('mustache', mustacheExpress());
 app.set('views', './views');
 app.set('view engine', 'mustache');
+
+app.set('trust proxy', 1) // trust first proxy
+app.use(session({
+  secret: 'hangman',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}))
 
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -17,11 +26,6 @@ app.use(expressValidator());
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 
-//Filter words into easy, normal and hard arrays
-const easyWords = words.filter(word => word.length >= 4 && word.length <= 6);
-const normalWords = words.filter(word => word.length >= 6 && word.length <= 8);
-const hardWords = words.filter(word => word.length >= 8);
-
 //Get a random number in range to call on word arrays.
 const getRandomInt = (min, max) => {
   min = Math.ceil(min);
@@ -29,10 +33,35 @@ const getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-//Grab a random word from array
-const easyWord = easyWords[getRandomInt(0, easyWords.length)];
-const normalWord = normalWords[getRandomInt(0, normalWords.length)];
-const hardWord = hardWords[getRandomInt(0, hardWords.length)];
+const getEasyWord = () => {
+  easyWords = words.filter(word => word.length >= 4 && word.length <= 6);
+  easyWord = easyWords[getRandomInt(0, easyWords.length)];
+  return easyWord;
+}
+
+const getNormalWord = () => {
+  const normalWords = words.filter(word => word.length >= 4 && word.length <= 6);
+  const normalWord = normalWords[getRandomInt(0, normalWords.length)];
+  return normalWord;
+}
+
+const getHardWord = () => {
+  const hardWords = words.filter(word => word.length >= 4 && word.length <= 6);
+  const hardWord = hardWords[getRandomInt(0, hardWords.length)];
+  return hardWord;
+}
+
+let existingAvatars = JSON.parse(fs.readFileSync('./avatars.json', 'utf8'));
+
+const addAvatar = (img) => {
+  let avatarImg = { img };
+  existingAvatars.avatars.push(avatarImg);
+  writeAvatars();
+}
+
+const writeAvatars = () => {
+  fs.writeFileSync('./avatars.json', JSON.stringify(existingAvatars));
+}
 
 let attemptedLetter, displayedMessage, fullWord, hiddenWord, outcome;
 let attemptedLettersArray = [];
@@ -40,7 +69,7 @@ let badAttemptCounter = 0;
 
 //Make the word all underscore
 const hideWord = (word) => {
-  hiddenWord = word.split('').map(function(character) {
+  hiddenWord = word.split('').map((character) => {
      return character = '_';
   }).join('');
 }
@@ -77,33 +106,50 @@ const checkLetter = (fullWord, attemptedLetter, hiddenWord, response, outcome) =
 }
 
 app.get('/', (request, response) => {
+  request.session.userName = "sandra";
+  console.log(request.session);
+  request.session.word = fullWord;
   attemptedLettersArray = [];
   badAttemptCounter = 0;
   response.render('index');
 });
 
 app.get('/easy', (request, response) => {
+  let easyWord = getEasyWord();
   console.log(easyWord);
   hideWord(easyWord);
   fullWord = easyWord;
-  response.render('game', {hiddenWord, fullWord})
+  response.render('game', { hiddenWord, fullWord })
 });
 
 app.get('/normal', (request, response) => {
+  let normalWord = getNormalWord();
   hideWord(normalWord);
   fullWord = normalWord;
-  response.render('game', {hiddenWord, fullWord})
+  response.render('game', { hiddenWord, fullWord})
 });
 
 app.get('/hard', (request, response) => {
+  let hardWord = getHardWord();
   hideWord(hardWord);
   fullWord = hardWord;
-  response.render('game', {hiddenWord, fullWord})
+  response.render('game', { hiddenWord, fullWord })
 });
 
 app.get('/result', (request, response) => {
-  response.render('result', {hiddenWord, fullWord, outcome})
+  response.render('result', { hiddenWord, fullWord, outcome })
 });
+
+app.get('/winners', (request, response) => {
+  console.log(existingAvatars)
+  response.render('winners', { existingAvatars })
+});
+
+app.post('/setavatar', (request, response) => {
+  console.log({request})
+  addAvatar(request.body.avatar);
+  response.render('result', { hiddenWord, fullWord, outcome })
+})
 
 app.post('/attempt', (request, response) => {
   request
