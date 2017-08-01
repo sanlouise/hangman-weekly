@@ -26,6 +26,11 @@ app.use(expressValidator());
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 
+// Construct keyboard.
+const keyboardRow1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
+const keyboardRow2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
+const keyboardRow3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
+
 //Get a random number in range to call on word arrays.
 const getRandomInt = (min, max) => {
   min = Math.ceil(min);
@@ -83,7 +88,7 @@ const resultMessage = (fullWord, hiddenWord, response) => {
 }
 
 const getRemainingAttempts = () => {
-  return `You have ${9 - badAttemptCounter} attempts left before you die.`
+  return `You have ${8 - badAttemptCounter} attempts left before you die.`
 }
 
 //Check if guessed letter is included in the fullWord
@@ -123,21 +128,21 @@ app.get('/easy', (request, response) => {
   console.log(easyWord);
   hideWord(easyWord);
   fullWord = easyWord;
-  response.render('game', { hiddenWord, fullWord, badAttemptCounter, getRemainingAttempts })
+  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter, getRemainingAttempts })
 });
 
 app.get('/normal', (request, response) => {
   let normalWord = getNormalWord();
   hideWord(normalWord);
   fullWord = normalWord;
-  response.render('game', { hiddenWord, fullWord, badAttemptCounter })
+  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter })
 });
 
 app.get('/hard', (request, response) => {
   let hardWord = getHardWord();
   hideWord(hardWord);
   fullWord = hardWord;
-  response.render('game', { hiddenWord, fullWord, badAttemptCounter })
+  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter })
 });
 
 app.get('/result', (request, response) => {
@@ -176,13 +181,13 @@ app.post('/attempt', (request, response) => {
   console.log({ badAttemptCounter });
   if (attemptedLettersArray.includes(attemptedLetter)) {
     displayedMessage = "You already guessed that letter! Sheesh.";
-    return response.render('game', { getRemainingAttempts, getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+    return response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  getRemainingAttempts, getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
   }
 
   hiddenWord = checkLetter(fullWord, attemptedLetter, hiddenWord, response);
   attemptedLettersArray.push(attemptedLetter);
   displayedMessage = '';
-  return response.render('game', { getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  return response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
 })
 
 app.listen(3000, () => {

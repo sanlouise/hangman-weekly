@@ -3,96 +3,33 @@
   <head>
     <meta charset="utf-8">
     <title>Hangman</title>
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="styles.css">
   </head>
   <body>
 
     <div class="game">
       <h1>Lose and You'll Die</h1>
-      <h1>Guess a letter</h1>
       <div class="row">
-        <form action="/attempt?key=q" method="post">
-          <button class="key" type="submit">q</button>
-        </form>
-        <form action="/attempt?key=w" method="post">
-          <button class="key" type="submit">w</button>
-        </form>
-        <form action="/attempt?key=e" method="post">
-          <button class="key" type="submit">e</button>
-        </form>
-        <form action="/attempt?key=r" method="post">
-          <button class="key" type="submit">r</button>
-        </form>
-        <form action="/attempt?key=t" method="post">
-          <button class="key" type="submit">t</button>
-        </form>
-        <form action="/attempt?key=y" method="post">
-          <button class="key" type="submit">y</button>
-        </form>
-        <form action="/attempt?key=u" method="post">
-          <button class="key" type="submit">u</button>
-        </form>
-        <form action="/attempt?key=i" method="post">
-          <button class="key" type="submit">i</button>
-        </form>
-        <form action="/attempt?key=o" method="post">
-          <button class="key" type="submit">o</button>
-        </form>
-        <form action="/attempt?key=p" method="post">
-          <button class="key" type="submit">p</button>
-        </form>
+        {{#keyboardRow1}}
+          <form action="/attempt?key={{.}}" method="post">
+            <button id="{{.}}" class="key" type="submit">{{.}}</button>
+          </form>
+        {{/keyboardRow1}}
       </div>
       <div class="row">
-        <form action="/attempt?key=a" method="post">
-          <button class="key" type="submit">a</button>
-        </form>
-        <form action="/attempt?key=s" method="post">
-          <button class="key" type="submit">s</button>
-        </form>
-        <form action="/attempt?key=d" method="post">
-          <button class="key" type="submit">d</button>
-        </form>
-        <form action="/attempt?key=f" method="post">
-          <button class="key" type="submit">f</button>
-        </form>
-        <form action="/attempt?key=g" method="post">
-          <button class="key" type="submit">g</button>
-        </form>
-        <form action="/attempt?key=h" method="post">
-          <button class="key" type="submit">h</button>
-        </form>
-        <form action="/attempt?key=j" method="post">
-          <button class="key" type="submit">j</button>
-        </form>
-        <form action="/attempt?key=k" method="post">
-          <button class="key" type="submit">k</button>
-        </form>
-        <form action="/attempt?key=l" method="post">
-          <button class="key" type="submit">l</button>
-        </form>
+        {{#keyboardRow2}}
+          <form action="/attempt?key={{.}}" method="post">
+            <button id="{{.}}" class="key" type="submit">{{.}}</button>
+          </form>
+        {{/keyboardRow2}}
       </div>
       <div class="row">
-        <form action="/attempt?key=z" method="post">
-          <button class="key" type="submit">z</button>
-        </form>
-        <form action="/attempt?key=x" method="post">
-          <button class="key" type="submit">x</button>
-        </form>
-        <form action="/attempt?key=c" method="post">
-          <button class="key" type="submit">c</button>
-        </form>
-        <form action="/attempt?key=v" method="post">
-          <button class="key" type="submit">v</button>
-        </form>
-        <form action="/attempt?key=b" method="post">
-          <button class="key" type="submit">b</button>
-        </form>
-        <form action="/attempt?key=n" method="post">
-          <button class="key" type="submit">n</button>
-        </form>
-        <form action="/attempt?key=m" method="post">
-          <button class="key" type="submit">m</button>
-        </form>
+        {{#keyboardRow3}}
+          <form action="/attempt?key={{.}}" method="post">
+            <button id="{{.}}" class="key" type="submit">{{.}}</button>
+          </form>
+        {{/keyboardRow3}}
       </div>
 
       <!-- <form action="/attempt" method="post">
@@ -100,18 +37,24 @@
         <button id="guess-btn" type="submit">Guess</button>
       </form> -->
 
-      <p>{{hiddenWord}}</p>
-
-      <div>
-        {{#attemptedLettersArray}}
-          {{.}}
-        {{/attemptedLettersArray}}
+      <div class="hidden-word">
+        <h3>{{hiddenWord}}</h3>
       </div>
 
-      {{displayedMessage}}
-      {{getRemainingAttempts}}
-
-      <div class="hangman-img-{{badAttemptCounter}}">
+      <div class="info-and-img">
+        <div class="hangman-img-{{badAttemptCounter}}">
+        </div>
+        <div class="game-info">
+          <span>Guessed letters:
+            {{#attemptedLettersArray}}
+              {{.}}
+            {{/attemptedLettersArray}}
+          </span>
+          <br>
+          {{displayedMessage}}
+          <br>
+          {{getRemainingAttempts}}
+        </div>
 
     </div>
   </body>
