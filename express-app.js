@@ -26,7 +26,7 @@ app.use(expressValidator());
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 
-// Construct keyboard.
+// Construct keyboard, multiple rows as mustache does not accept nested arrays.
 const keyboardRow1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
 const keyboardRow2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
 const keyboardRow3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
@@ -79,14 +79,6 @@ const hideWord = (word) => {
   }).join('');
 }
 
-const resultMessage = (fullWord, hiddenWord, response) => {
-  if (fullWord === hiddenWord) {
-    outcome = "winner"
-    console.log("We got a winner");
-    response.redirect('/result');
-  }
-}
-
 const getRemainingAttempts = () => {
   return `You have ${8 - badAttemptCounter} attempts left before you die.`
 }
@@ -137,9 +129,9 @@ app.post('/setavatar', (request, response) => {
 })
 
 app.post('/attempt', (request, response) => {
-
   if (badAttemptCounter >= 8) {
-    displayedMessage = "You have run out of attempts! You suck! Get a life!";
+    displayedMessage = "You have run out of attempts, you die.";
+    hiddenWord = fullWord;
     outcome = "loser"
     return response.render('result', { outcome });
   }
@@ -170,9 +162,13 @@ app.post('/attempt', (request, response) => {
 
   hiddenWord = hiddenWord.split('').map((letter, index) => (
     attemptedLetter === fullWord[index]) ? attemptedLetter : letter
-  ).join('')
+  ).join('');
 
-  resultMessage(fullWord, hiddenWord, response);
+  if (fullWord === hiddenWord) {
+    outcome = "winner"
+    console.log("We got a winner");
+    return response.redirect('/result');
+  }
 
   attemptedLettersArray.push(attemptedLetter);
   displayedMessage = '';
@@ -182,3 +178,5 @@ app.post('/attempt', (request, response) => {
 app.listen(3000, () => {
   console.log('Listening on port 3000');
 });
+
+module.exports = { hideWord };

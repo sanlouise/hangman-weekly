@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest tests --watch"
   },
   "author": "",
   "license": "ISC",
@@ -15,5 +15,8 @@
     "express-validator": "^3.2.1",
     "mustache-express": "^1.2.5",
     "uid-safe": "^2.1.4"
+  },
+  "devDependencies": {
+    "jest": "^20.0.4"
   }
 }
