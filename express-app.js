@@ -26,10 +26,6 @@ app.use(expressValidator());
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 
-// Construct keyboard, multiple rows as mustache does not accept nested arrays.
-const keyboardRow1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
-const keyboardRow2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
-const keyboardRow3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
 
 //Get a random number in range to call on word arrays.
 const getRandomInt = (min, max) => {
@@ -45,13 +41,13 @@ const getEasyWord = () => {
 }
 
 const getNormalWord = () => {
-  const normalWords = words.filter(word => word.length >= 4 && word.length <= 6);
+  const normalWords = words.filter(word => word.length >= 6 && word.length <= 8);
   const normalWord = normalWords[getRandomInt(0, normalWords.length)];
   return normalWord;
 }
 
 const getHardWord = () => {
-  const hardWords = words.filter(word => word.length >= 4 && word.length <= 6);
+  const hardWords = words.filter(word => word.length > 8);
   const hardWord = hardWords[getRandomInt(0, hardWords.length)];
   return hardWord;
 }
@@ -68,53 +64,62 @@ const writeAvatars = () => {
   fs.writeFileSync('./avatars.json', JSON.stringify(existingAvatars));
 }
 
-let attemptedLetter, displayedMessage, fullWord, hiddenWord, outcome;
-let attemptedLettersArray = [];
-let badAttemptCounter = 0;
+// let attemptedLetter, displayedMessage, fullWord, hiddenWord, outcome;
+// let attemptedLettersArray = [];
+// let badAttemptCounter = 0;
+
+let game = {
+  attemptedLetter: undefined,
+  displayedMessage: undefined,
+  fullWord: undefined,
+  hiddenWord: undefined,
+  outcome: undefined,
+  attemptedLettersArray: [],
+  badAttemptCounter: 0,
+  // Construct keyboard, multiple rows as mustache does not accept nested arrays.
+  keyboardRow1: ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+  keyboardRow2: ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  keyboardRow3: ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+}
 
 //Make the word all underscore
-const hideWord = (word) => {
-  hiddenWord = word.split('').map((character) => {
-     return character = '_';
-  }).join('');
-}
+const hideWord = (word) => word.split('').map(character => '_').join('')
 
 const getRemainingAttempts = () => {
   return `You have ${8 - badAttemptCounter} attempts left before you die.`
 }
 
 app.get('/', (request, response) => {
-  console.log("This is the request" + request.session);
-  request.session.word = fullWord;
-  attemptedLettersArray = [];
-  badAttemptCounter = 0;
+  game.attemptedLettersArray = [];
+  game.badAttemptCounter = 0;
   response.render('index');
 });
 
 app.get('/easy', (request, response) => {
   let easyWord = getEasyWord();
   console.log(easyWord);
-  hideWord(easyWord);
-  fullWord = easyWord;
-  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter, getRemainingAttempts })
+  game.hiddenWord = hideWord(easyWord);
+  game.fullWord = easyWord;
+  response.render('game', game)
 });
 
 app.get('/normal', (request, response) => {
   let normalWord = getNormalWord();
-  hideWord(normalWord);
-  fullWord = normalWord;
-  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter })
+  game.hiddenWord = hideWord(normalWord);
+  game.fullWord = normalWord;
+  response.render('game', game)
 });
 
 app.get('/hard', (request, response) => {
   let hardWord = getHardWord();
-  hideWord(hardWord);
-  fullWord = hardWord;
-  response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  hiddenWord, fullWord, badAttemptCounter })
+  console.log(hardWord);
+  game.hiddenWord = hideWord(hardWord);
+  game.fullWord = hardWord;
+  response.render('game', game)
 });
 
 app.get('/result', (request, response) => {
-  response.render('result', { hiddenWord, fullWord, outcome })
+  response.render('result', game)
 });
 
 app.get('/winners', (request, response) => {
@@ -129,11 +134,11 @@ app.post('/setavatar', (request, response) => {
 })
 
 app.post('/attempt', (request, response) => {
-  if (badAttemptCounter >= 8) {
-    displayedMessage = "You have run out of attempts, you die.";
-    hiddenWord = fullWord;
-    outcome = "loser"
-    return response.render('result', { outcome });
+  if (game.badAttemptCounter >= 8) {
+    game.displayedMessage = "You have run out of attempts, you die.";
+    game.hiddenWord = fullWord;
+    game.outcome = "loser"
+    return response.render('result', game);
   }
 
   // request
@@ -148,31 +153,31 @@ app.post('/attempt', (request, response) => {
   //   return response.render('game', { getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
   // }
 
-  attemptedLetter = request.query.key.toLowerCase();
-  console.log({ badAttemptCounter });
+  game.attemptedLetter = request.query.key.toLowerCase();
+  console.log({ badAttemptCounter: game.badAttemptCounter });
 
-  if (attemptedLettersArray.includes(attemptedLetter)) {
-    displayedMessage = "You already guessed that letter! Sheesh.";
-    return response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  getRemainingAttempts, getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  if (game.attemptedLettersArray.includes(game.attemptedLetter)) {
+    game.displayedMessage = "You already guessed that letter! Sheesh.";
+    return response.render('game', game);
   }
 
-  if (!fullWord.includes(attemptedLetter)) {
-    badAttemptCounter++
+  if (!game.fullWord.includes(game.attemptedLetter)) {
+    game.badAttemptCounter++
   }
 
-  hiddenWord = hiddenWord.split('').map((letter, index) => (
-    attemptedLetter === fullWord[index]) ? attemptedLetter : letter
+  game.hiddenWord = Array.from(game.hiddenWord).map((letter, index) => (
+    game.attemptedLetter === game.fullWord[index]) ? game.attemptedLetter : letter
   ).join('');
 
-  if (fullWord === hiddenWord) {
-    outcome = "winner"
+  if (game.fullWord === game.hiddenWord) {
+    game.outcome = "winner"
     console.log("We got a winner");
     return response.redirect('/result');
   }
 
-  attemptedLettersArray.push(attemptedLetter);
-  displayedMessage = '';
-  return response.render('game', { keyboardRow1, keyboardRow2, keyboardRow3,  getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
+  game.attemptedLettersArray.push(game.attemptedLetter);
+  game.displayedMessage = '';
+  return response.render('game', game);
 })
 
 app.listen(3000, () => {
