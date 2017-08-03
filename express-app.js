@@ -3,7 +3,6 @@ const app = express();
 const mustacheExpress = require('mustache-express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const appHelper = require('./app');
 const expressValidator = require('express-validator');
 const session = require('express-session');
 
@@ -11,12 +10,10 @@ app.engine('mustache', mustacheExpress());
 app.set('views', './views');
 app.set('view engine', 'mustache');
 
-app.set('trust proxy', 1) // trust first proxy
 app.use(session({
   secret: 'hangman',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true }
 }))
 
 app.use(express.static('./public'));
@@ -25,7 +22,6 @@ app.use(expressValidator());
 
 //Get all words from file system
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
-
 
 //Get a random number in range to call on word arrays.
 const getRandomInt = (min, max) => {
@@ -52,22 +48,6 @@ const getHardWord = () => {
   return hardWord;
 }
 
-let existingAvatars = JSON.parse(fs.readFileSync('./avatars.json', 'utf8'));
-
-const addAvatar = (img) => {
-  let avatarImg = { img };
-  existingAvatars.avatars.push(avatarImg);
-  writeAvatars();
-}
-
-const writeAvatars = () => {
-  fs.writeFileSync('./avatars.json', JSON.stringify(existingAvatars));
-}
-
-// let attemptedLetter, displayedMessage, fullWord, hiddenWord, outcome;
-// let attemptedLettersArray = [];
-// let badAttemptCounter = 0;
-
 let game = {
   attemptedLetter: undefined,
   displayedMessage: undefined,
@@ -76,6 +56,7 @@ let game = {
   outcome: undefined,
   attemptedLettersArray: [],
   badAttemptCounter: 0,
+  getRemainingAttempts: undefined,
   // Construct keyboard, multiple rows as mustache does not accept nested arrays.
   keyboardRow1: ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
   keyboardRow2: ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
@@ -83,13 +64,14 @@ let game = {
 }
 
 //Make the word all underscore
-const hideWord = (word) => word.split('').map(character => '_').join('')
+const hideWord = (word) => word.split('').map(character => '_').join('');
 
 const getRemainingAttempts = () => {
   return `You have ${8 - badAttemptCounter} attempts left before you die.`
 }
 
 app.get('/', (request, response) => {
+  let displayedMessage = '';
   game.attemptedLettersArray = [];
   game.badAttemptCounter = 0;
   response.render('index');
@@ -122,36 +104,7 @@ app.get('/result', (request, response) => {
   response.render('result', game)
 });
 
-app.get('/winners', (request, response) => {
-  console.log(existingAvatars)
-  response.render('winners', { existingAvatars })
-});
-
-app.post('/setavatar', (request, response) => {
-  console.log({request})
-  addAvatar(request.body.avatar);
-  response.render('result', { hiddenWord, fullWord, outcome })
-})
-
 app.post('/attempt', (request, response) => {
-  if (game.badAttemptCounter >= 8) {
-    game.displayedMessage = "You have run out of attempts, you die.";
-    game.hiddenWord = fullWord;
-    game.outcome = "loser"
-    return response.render('result', game);
-  }
-
-  // request
-  //   .checkBody("attemptedLetter", "You must guess a letter")
-  //   .notEmpty()
-  //   .isAlpha()
-  //   .isLength(1, 1);
-  //
-  // const errors = request.validationErrors();
-  // if (errors) {
-  //   displayedMessage = "You need to type in something valid.";
-  //   return response.render('game', { getRemainingAttempts, badAttemptCounter, hiddenWord, attemptedLetter, attemptedLettersArray, displayedMessage });
-  // }
 
   game.attemptedLetter = request.query.key.toLowerCase();
   console.log({ badAttemptCounter: game.badAttemptCounter });
@@ -175,6 +128,14 @@ app.post('/attempt', (request, response) => {
     return response.redirect('/result');
   }
 
+  if (game.badAttemptCounter >= 8) {
+    console.log("A loser!")
+    game.displayedMessage = "You have run out of attempts, you die.";
+    game.hiddenWord = game.fullWord;
+    game.outcome = "loser"
+    return response.render('result', game);
+  }
+
   game.attemptedLettersArray.push(game.attemptedLetter);
   game.displayedMessage = '';
   return response.render('game', game);
@@ -183,5 +144,3 @@ app.post('/attempt', (request, response) => {
 app.listen(3000, () => {
   console.log('Listening on port 3000');
 });
-
-module.exports = { hideWord };
